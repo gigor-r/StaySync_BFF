@@ -1,0 +1,112 @@
+package com.staysync.bff.client;
+
+import com.staysync.bff.exception.DownstreamServiceException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class UsuariosClient {
+
+    private final RestTemplate restTemplate;
+
+    @Value("${services.usuarios.url}")
+    private String baseUrl;
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "loginFallback")
+    public ResponseEntity<Object> login(Object body) {
+        return restTemplate.postForEntity(baseUrl + "/api/v1/auth/login", body, Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "passthruFallback")
+    public ResponseEntity<Object> registro(Object body) {
+        return restTemplate.postForEntity(baseUrl + "/api/v1/auth/registro", body, Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "passthruFallback")
+    public ResponseEntity<Object> refresh(Object body) {
+        return restTemplate.postForEntity(baseUrl + "/api/v1/auth/refresh", body, Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
+    public ResponseEntity<Object> logout(String authHeader, Object body) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/auth/logout",
+                HttpMethod.POST,
+                new HttpEntity<>(body, buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
+    public ResponseEntity<Object> getPerfil(String authHeader, Long id) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/usuarios/" + id,
+                HttpMethod.GET,
+                new HttpEntity<>(buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
+    public ResponseEntity<Object> updatePerfil(String authHeader, Long id, Object body) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/usuarios/" + id,
+                HttpMethod.PUT,
+                new HttpEntity<>(body, buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
+    public ResponseEntity<Object> listarUsuarios(String authHeader) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/usuarios",
+                HttpMethod.GET,
+                new HttpEntity<>(buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    public ResponseEntity<Object> loginFallback(Object body, Exception ex) {
+        log.error("usuarios-service no disponible en login: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de autenticación no está disponible. Intente nuevamente.");
+    }
+
+    public ResponseEntity<Object> passthruFallback(Object body, Exception ex) {
+        log.error("usuarios-service no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de usuarios no está disponible.");
+    }
+
+    public ResponseEntity<Object> authFallback(String authHeader, Exception ex) {
+        log.error("usuarios-service no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de usuarios no está disponible.");
+    }
+
+    public ResponseEntity<Object> authFallback(String authHeader, Object body, Exception ex) {
+        log.error("usuarios-service no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de usuarios no está disponible.");
+    }
+
+    public ResponseEntity<Object> authFallback(String authHeader, Long id, Exception ex) {
+        log.error("usuarios-service no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de usuarios no está disponible.");
+    }
+
+    public ResponseEntity<Object> authFallback(String authHeader, Long id, Object body, Exception ex) {
+        log.error("usuarios-service no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de usuarios no está disponible.");
+    }
+
+    static HttpHeaders buildHeaders(String authHeader) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (authHeader != null) headers.set("Authorization", authHeader);
+        return headers;
+    }
+}

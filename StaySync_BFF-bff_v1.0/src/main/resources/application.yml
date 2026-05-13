@@ -77,7 +77,7 @@ management:
 http:
   client:
     connect-timeout: 3000
-    read-timeout: 5000
+    read-timeout: 10000
 
 logging:
   level:

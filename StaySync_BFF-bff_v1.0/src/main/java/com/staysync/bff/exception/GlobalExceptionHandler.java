@@ -3,6 +3,7 @@ package com.staysync.bff.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -14,6 +15,13 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<Map<String, Object>> handleMissingHeader(MissingRequestHeaderException ex) {
+        log.warn("Cabecera requerida faltante: {}", ex.getHeaderName());
+        return build(HttpStatus.BAD_REQUEST,
+                "Cabecera requerida faltante: '" + ex.getHeaderName() + "'");
+    }
 
     @ExceptionHandler(DownstreamServiceException.class)
     public ResponseEntity<Map<String, Object>> handleDownstream(DownstreamServiceException ex) {

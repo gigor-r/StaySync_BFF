@@ -57,6 +57,49 @@ public class PagosClient {
                 Object.class);
     }
 
+    @CircuitBreaker(name = "pagosCB", fallbackMethod = "mpFallback")
+    public ResponseEntity<Object> crearPreferenciaMP(Object body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return restTemplate.exchange(
+                baseUrl + "/api/pagos/mp/preferencia",
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers),
+                Object.class);
+    }
+
+    public ResponseEntity<Object> mpFallback(Object body, Exception ex) {
+        log.error("pagos-service MP no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de Mercado Pago no está disponible. Intente nuevamente.");
+    }
+
+    @CircuitBreaker(name = "pagosCB", fallbackMethod = "stripeFallback")
+    public ResponseEntity<Object> crearCheckoutStripe(Object body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return restTemplate.exchange(
+                baseUrl + "/api/pagos/stripe/checkout",
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "pagosCB", fallbackMethod = "stripeFallback")
+    public ResponseEntity<Object> confirmarCheckoutStripe(Object body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return restTemplate.exchange(
+                baseUrl + "/api/pagos/stripe/confirmar",
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers),
+                Object.class);
+    }
+
+    public ResponseEntity<Object> stripeFallback(Object body, Exception ex) {
+        log.error("pagos-service Stripe no disponible: {}", ex.getMessage());
+        throw new DownstreamServiceException("El servicio de pago Stripe no está disponible. Intente nuevamente.");
+    }
+
     public ResponseEntity<Object> mutarFallback(String authHeader, Object body, Exception ex) {
         log.error("pagos-service no disponible: {}", ex.getMessage());
         throw new DownstreamServiceException("El servicio de pagos no está disponible. Intente nuevamente.");

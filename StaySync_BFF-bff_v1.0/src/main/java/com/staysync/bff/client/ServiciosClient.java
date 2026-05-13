@@ -57,6 +57,15 @@ public class ServiciosClient {
                 Object.class);
     }
 
+    @CircuitBreaker(name = "serviciosCB", fallbackMethod = "listarFallback")
+    public ResponseEntity<Object> listarTodasSolicitudes(String authHeader) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/solicitudes",
+                HttpMethod.GET,
+                new HttpEntity<>(UsuariosClient.buildHeaders(authHeader)),
+                Object.class);
+    }
+
     @CircuitBreaker(name = "serviciosCB", fallbackMethod = "mutarFallback")
     public ResponseEntity<Object> actualizarEstadoSolicitud(String authHeader, Long id, Object body) {
         return restTemplate.exchange(

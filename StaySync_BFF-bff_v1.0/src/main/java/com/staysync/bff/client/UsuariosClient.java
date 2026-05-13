@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
@@ -71,6 +74,36 @@ public class UsuariosClient {
                 HttpMethod.GET,
                 new HttpEntity<>(buildHeaders(authHeader)),
                 Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "buscarFallback")
+    public ResponseEntity<Object> buscarUsuarios(String authHeader, String q, String rol) {
+        String url = UriComponentsBuilder
+                .fromUriString(baseUrl + "/api/v1/usuarios/buscar")
+                .queryParam("q",   q   != null ? q   : "")
+                .queryParam("rol", rol != null ? rol : "")
+                .toUriString();
+        return restTemplate.exchange(url, HttpMethod.GET,
+                new HttpEntity<>(buildHeaders(authHeader)), Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "listarHuespedesFallback")
+    public ResponseEntity<Object> listarHuespedes(String authHeader) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/usuarios/huespedes",
+                HttpMethod.GET,
+                new HttpEntity<>(buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    public ResponseEntity<Object> buscarFallback(String authHeader, String q, String rol, Exception ex) {
+        log.warn("usuarios-service buscar no disponible: {}", ex.getMessage());
+        return ResponseEntity.ok(Collections.emptyList());
+    }
+
+    public ResponseEntity<Object> listarHuespedesFallback(String authHeader, Exception ex) {
+        log.warn("usuarios-service huespedes no disponible: {}", ex.getMessage());
+        return ResponseEntity.ok(Collections.emptyList());
     }
 
     public ResponseEntity<Object> loginFallback(Object body, Exception ex) {

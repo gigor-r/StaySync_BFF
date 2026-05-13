@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/bff/servicios")
 @RequiredArgsConstructor
@@ -40,11 +42,23 @@ public class ServicioBffController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
     }
 
+    @Operation(summary = "Listar TODAS las solicitudes — uso de recepción/admin")
+    @GetMapping("/solicitudes/todas")
+    public ResponseEntity<Object> listarTodasSolicitudes(
+            @RequestHeader("Authorization") String authHeader) {
+        return serviciosClient.listarTodasSolicitudes(authHeader);
+    }
+
     @Operation(summary = "Listar solicitudes de servicios de un usuario")
     @GetMapping("/solicitudes")
     public ResponseEntity<Object> listarSolicitudes(
             @RequestHeader("Authorization") String authHeader,
-            @RequestParam Long usuarioId) {
+            @RequestParam(required = false) Long usuarioId) {
+        if (usuarioId == null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("message", "El parámetro usuarioId es requerido y debe ser un número válido."));
+        }
         return serviciosClient.listarSolicitudes(authHeader, usuarioId);
     }
 

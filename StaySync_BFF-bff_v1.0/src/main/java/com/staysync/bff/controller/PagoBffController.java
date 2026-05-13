@@ -50,4 +50,25 @@ public class PagoBffController {
         var response = pagosClient.solicitarReembolso(authHeader, pagoId, body);
         return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
     }
+
+    @Operation(summary = "Crear preferencia de pago en Mercado Pago (Sandbox)")
+    @PostMapping("/mp/preferencia")
+    public ResponseEntity<Object> crearPreferenciaMP(@RequestBody Object body) {
+        var response = pagosClient.crearPreferenciaMP(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
+    }
+
+    @Operation(summary = "Crear sesión de pago en Stripe Checkout")
+    @PostMapping("/stripe/checkout")
+    public ResponseEntity<Object> crearCheckoutStripe(@RequestBody Object body) {
+        var response = pagosClient.crearCheckoutStripe(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
+    }
+
+    @Operation(summary = "Confirmar pago Stripe tras redirección exitosa")
+    @PostMapping("/stripe/confirmar")
+    public ResponseEntity<Object> confirmarCheckoutStripe(@RequestBody Object body) {
+        var response = pagosClient.confirmarCheckoutStripe(body);
+        return ResponseEntity.ok(response.getBody());
+    }
 }

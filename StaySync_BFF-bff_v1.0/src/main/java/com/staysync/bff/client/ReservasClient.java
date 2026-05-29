@@ -29,6 +29,15 @@ public class ReservasClient {
                 Object.class);
     }
 
+    @CircuitBreaker(name = "reservasCB", fallbackMethod = "listarFallback")
+    public ResponseEntity<Object> getReservasHoy(String authHeader) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/reservas/hoy",
+                HttpMethod.GET,
+                new HttpEntity<>(UsuariosClient.buildHeaders(authHeader)),
+                Object.class);
+    }
+
     @CircuitBreaker(name = "reservasCB", fallbackMethod = "getOneFallback")
     public ResponseEntity<Object> getById(String authHeader, Long id) {
         return restTemplate.exchange(

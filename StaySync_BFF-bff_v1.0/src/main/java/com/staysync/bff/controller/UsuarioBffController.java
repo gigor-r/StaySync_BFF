@@ -42,6 +42,21 @@ public class UsuarioBffController {
         return usuariosClient.listarUsuarios(authHeader);
     }
 
+    @Operation(summary = "Obtener perfil del usuario autenticado (cualquier rol)")
+    @GetMapping("/perfil")
+    public ResponseEntity<Object> getPerfilPropio(
+            @RequestHeader("Authorization") String authHeader) {
+        return usuariosClient.getPerfilPropio(authHeader);
+    }
+
+    @Operation(summary = "Actualizar perfil propio del usuario autenticado (cualquier rol)")
+    @PutMapping("/perfil")
+    public ResponseEntity<Object> updatePerfilPropio(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Object body) {
+        return usuariosClient.updatePerfilPropio(authHeader, body);
+    }
+
     @Operation(summary = "Obtener perfil de usuario por ID")
     @GetMapping("/{id}")
     public ResponseEntity<Object> getPerfil(

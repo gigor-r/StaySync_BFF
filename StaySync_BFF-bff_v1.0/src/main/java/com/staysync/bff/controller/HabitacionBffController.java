@@ -17,11 +17,17 @@ public class HabitacionBffController {
 
     private final HabitacionesClient habitacionesClient;
 
-    @Operation(summary = "Listar habitaciones disponibles")
+    @Operation(summary = "Listar habitaciones disponibles con filtros opcionales")
     @GetMapping("/disponibles")
     public ResponseEntity<Object> listarDisponibles(
-            @RequestHeader("Authorization") String authHeader) {
-        return habitacionesClient.listarDisponibles(authHeader);
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) Integer capacidad,
+            @RequestParam(required = false) String amenidad,
+            @RequestParam(defaultValue = "precio_asc") String sort) {
+        if (capacidad == null && (amenidad == null || amenidad.isBlank())) {
+            return habitacionesClient.listarDisponibles(authHeader);
+        }
+        return habitacionesClient.buscarDisponibles(authHeader, capacidad, amenidad, sort);
     }
 
     @Operation(summary = "Listar todas las habitaciones")

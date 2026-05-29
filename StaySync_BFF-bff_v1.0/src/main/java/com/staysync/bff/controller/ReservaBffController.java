@@ -36,6 +36,13 @@ public class ReservaBffController {
         return reservasClient.listar(authHeader);
     }
 
+    @Operation(summary = "Reservas del día: check-ins pendientes (CONFIRMADA/hoy) y check-outs activos (CHECKIN)")
+    @GetMapping("/hoy")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'RECEPCIONISTA')")
+    public ResponseEntity<Object> getReservasHoy(@RequestHeader("Authorization") String authHeader) {
+        return reservasClient.getReservasHoy(authHeader);
+    }
+
     @Operation(summary = "Obtener reserva detallada con información de habitación",
                description = "Agrega datos de reservas-service + habitaciones-service en una sola respuesta")
     @GetMapping("/{id}/detalle")

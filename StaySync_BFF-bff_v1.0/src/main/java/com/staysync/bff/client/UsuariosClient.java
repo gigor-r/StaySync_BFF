@@ -50,6 +50,24 @@ public class UsuariosClient {
     }
 
     @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
+    public ResponseEntity<Object> getPerfilPropio(String authHeader) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/usuarios/perfil",
+                HttpMethod.GET,
+                new HttpEntity<>(buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
+    public ResponseEntity<Object> updatePerfilPropio(String authHeader, Object body) {
+        return restTemplate.exchange(
+                baseUrl + "/api/v1/usuarios/perfil",
+                HttpMethod.PUT,
+                new HttpEntity<>(body, buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "usuariosCB", fallbackMethod = "authFallback")
     public ResponseEntity<Object> getPerfil(String authHeader, Long id) {
         return restTemplate.exchange(
                 baseUrl + "/api/v1/usuarios/" + id,

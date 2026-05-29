@@ -9,6 +9,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +28,20 @@ public class HabitacionesClient {
     public ResponseEntity<Object> listarDisponibles(String authHeader) {
         return restTemplate.exchange(
                 baseUrl + "/api/v1/habitaciones/disponibles",
+                HttpMethod.GET,
+                new HttpEntity<>(UsuariosClient.buildHeaders(authHeader)),
+                Object.class);
+    }
+
+    @CircuitBreaker(name = "habitacionesCB", fallbackMethod = "buscarFallback")
+    public ResponseEntity<Object> buscarDisponibles(String authHeader, Integer capacidad, String amenidad, String sort) {
+        UriComponentsBuilder uri = UriComponentsBuilder
+                .fromHttpUrl(baseUrl + "/api/v1/habitaciones/disponibles");
+        if (capacidad != null)                          uri.queryParam("capacidad", capacidad);
+        if (amenidad != null && !amenidad.isBlank())    uri.queryParam("amenidad", amenidad);
+        if (sort != null && !sort.isBlank())            uri.queryParam("sort", sort);
+        return restTemplate.exchange(
+                uri.toUriString(),
                 HttpMethod.GET,
                 new HttpEntity<>(UsuariosClient.buildHeaders(authHeader)),
                 Object.class);
@@ -69,6 +85,11 @@ public class HabitacionesClient {
 
     public ResponseEntity<Object> listarFallback(String authHeader, Exception ex) {
         log.warn("habitaciones-service no disponible, retornando lista vacía: {}", ex.getMessage());
+        return ResponseEntity.ok(Collections.emptyList());
+    }
+
+    public ResponseEntity<Object> buscarFallback(String authHeader, Integer capacidad, String amenidad, String sort, Exception ex) {
+        log.warn("habitaciones-service no disponible para búsqueda filtrada: {}", ex.getMessage());
         return ResponseEntity.ok(Collections.emptyList());
     }
 

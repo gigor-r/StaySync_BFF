@@ -1,0 +1,7 @@
+# Perfil LOCAL — sobreescribe application.yml para desarrollo en máquina personal.
+# NO incluir en imagen Docker ni en ECS Task Definition.
+jwt:
+  secret: StaySyncJWT_SuperSecretKey_Min256Bits_2024!XyZ#AbC
+
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
